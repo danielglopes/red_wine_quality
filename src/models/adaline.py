@@ -47,7 +47,6 @@ class AdalineGD:
             net_input = self._net_input(X)
             output = self._activation(net_input)
             errors = y - output
-            # Atualização em batch
             self.w_[1:] += self.eta * X.T.dot(errors)
             self.w_[0] += self.eta * errors.sum()
             cost = (errors**2).sum() / 2.0

@@ -37,7 +37,6 @@ class MultilayerPerceptron:
         rng = np.random.default_rng(self.random_state)
         self.weights_ = []
         for n_in, n_out in zip(layer_sizes[:-1], layer_sizes[1:]):
-            # +1 para o bias na dimensão de entrada
             w = rng.normal(loc=0.0, scale=0.1, size=(n_in + 1, n_out))
             self.weights_.append(w)
 
@@ -79,7 +78,6 @@ class MultilayerPerceptron:
         """
         Treina a rede com Backpropagation.
         """
-        # Conversão de rótulos para {0, 1}
         y_bin = np.where(y <= 0, 0.0, 1.0).reshape(-1, 1)
         n_samples, n_features = X.shape
 
@@ -91,16 +89,11 @@ class MultilayerPerceptron:
             activations, zs = self._forward(X)
             output = activations[-1]
 
-            # Erro
             error = output - y_bin
 
-            # Custo (apenas para monitoramento)
             cost = (error**2).sum() / 2.0
             self.cost_.append(cost)
 
-            # --- BACKPROPAGATION ---
-
-            # Delta da camada de saída
             delta = error * self._sigmoid_deriv(zs[-1])
 
             grads: list[np.ndarray] = []
@@ -108,25 +101,19 @@ class MultilayerPerceptron:
             for layer_idx in reversed(range(len(self.weights_))):
                 a_prev = activations[layer_idx]
 
-                # Adiciona bias na ativação anterior para bater com a dimensão dos pesos
                 a_prev_bias = np.c_[np.ones((n_samples, 1)), a_prev]
 
-                # --- CORREÇÃO AQUI ---
-                # Removemos a divisão por n_samples.
-                # Queremos a SOMA dos gradientes, não a média, para acelerar o treino.
+                # Removemos a divisão por n amostras para acelerar o treino
                 grad_w = a_prev_bias.T.dot(delta)
 
                 grads.insert(0, grad_w)
 
-                # Calcula o delta para a próxima iteração (camada anterior)
                 if layer_idx != 0:
-                    # Remove o peso do bias para propagar o erro
                     w_no_bias = self.weights_[layer_idx][1:, :]
                     delta = (delta.dot(w_no_bias.T)) * self._sigmoid_deriv(
                         zs[layer_idx - 1]
                     )
 
-            # Atualização de pesos
             for i, grad in enumerate(grads):
                 self.weights_[i] -= self.lr * grad
 

@@ -108,7 +108,6 @@ def plot_feature_importance(model, feature_names):
     """
     Plota os pesos do ADALINE como importância de atributos.
     """
-    # Pega os pesos (ignorando o bias w[0])
     weights = model.w_[1:]
 
     plt.figure(figsize=(10, 6))
