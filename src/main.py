@@ -1,7 +1,9 @@
 import os
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix
+import pickle
 
 # Importações dos seus módulos
 import data_prep
@@ -16,6 +18,24 @@ from visualization import (
 
 
 def main():
+    # Configuração de Argumentos via Terminal
+    parser = argparse.ArgumentParser(description="Sommelier Artificial")
+
+    # Parâmetros Gerais
+    parser.add_argument(
+        "--lr", type=float, default=0.001, help="Taxa de aprendizado geral"
+    )
+
+    # Parâmetros Específicos do ADALINE (Convexo, convergiu rápido)
+    parser.add_argument(
+        "--epochs_ada", type=int, default=500, help="Épocas para ADALINE"
+    )
+
+    # Parâmetros Específicos do MLP (Não-convexo, precisa de tempo)
+    parser.add_argument("--epochs_mlp", type=int, default=30000, help="Épocas para MLP")
+
+    args = parser.parse_args()
+
     # 1. Carregar dados processados
     print("--- Carregando dados ---")
     X_train, X_test, y_train, y_test = data_prep.carregar_dados()
@@ -24,11 +44,11 @@ def main():
         return
 
     # ==========================================================
-    # 2. Treinamento do ADALINE (Baseline Linear)
+    # 2. Treinamento do ADALINE
     # ==========================================================
-    print("\n--- Treinando ADALINE ---")
-    # Nota: Adaline é sensível ao Learning Rate (eta). Se o custo subir, diminua o eta.
-    ada = AdalineGD(eta=0.0001, n_iter=1000, random_state=1)
+    print(f"\n--- Treinando ADALINE ({args.epochs_ada} épocas) ---")
+    # Usa o args.epochs_ada aqui
+    ada = AdalineGD(eta=0.0001, n_iter=args.epochs_ada, random_state=1)
     ada.fit(X_train, y_train)
 
     y_pred_ada = ada.predict(X_test)
@@ -37,15 +57,16 @@ def main():
     print("Matriz de Confusão ADALINE:\n", confusion_matrix(y_test, y_pred_ada))
 
     # ==========================================================
-    # 3. Treinamento do MLP (Deep Learning)
+    # 3. Treinamento do MLP
     # ==========================================================
-    print("\n--- Treinando Perceptron Multicamadas (MLP) ---")
-    # Configuração: 2 camadas ocultas com 16 e 8 neurônios
+    print(f"\n--- Treinando MLP ({args.epochs_mlp} épocas) ---")
+
+    # Usa o args.epochs_mlp aqui
     mlp = MultilayerPerceptron(
-        hidden_layers=(32, 16, 8),  # Três camadas, mais neurônios (antes era 16)
-        lr=0.001,  # Taxa de aprendizado conservadora
-        n_iter=30000,  # Muito mais épocas (Backprop é lento)
-        random_state=42,  # Mude a semente para tentar um ponto de partida melhor
+        hidden_layers=(32, 16),
+        lr=args.lr,
+        n_iter=args.epochs_mlp,  # <--- AQUI ESTÁ A MUDANÇA
+        random_state=42,
     )
 
     # MLP usa target 0/1 internamente, mas sua classe já trata a conversão no fit()
@@ -104,6 +125,22 @@ def main():
     print("\n--- Gerando Importância de Atributos ---")
     plot_feature_importance(ada, colunas)
     plt.savefig(os.path.join(dir_figs, "feature_importance_adaline.png"))
+
+    # ==========================================================
+    # SALVAMENTO DOS MODELOS (Persistência)
+    # ==========================================================
+    dir_models = os.path.join(os.path.dirname(__file__), "..", "results", "models")
+    os.makedirs(dir_models, exist_ok=True)
+
+    # Salvar ADALINE
+    with open(os.path.join(dir_models, "adaline_model.pkl"), "wb") as f:
+        pickle.dump(ada, f)
+    print("Modelo ADALINE salvo em results/models/adaline_model.pkl")
+
+    # Salvar MLP
+    with open(os.path.join(dir_models, "mlp_model.pkl"), "wb") as f:
+        pickle.dump(mlp, f)
+    print("Modelo MLP salvo em results/models/mlp_model.pkl")
 
     print("\n--- FIM DO EXPERIMENTO ---")
 
