@@ -45,7 +45,7 @@ def main():
 
     print(f"\n--- Treinando MLP ({args.epochs_mlp} épocas) ---")
     mlp = MultilayerPerceptron(
-        hidden_layers=(32, 16),
+        hidden_layers=(32, 16, 8),
         lr=args.lr,
         n_iter=args.epochs_mlp,
         random_state=42,
