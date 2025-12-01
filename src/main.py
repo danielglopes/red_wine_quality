@@ -88,17 +88,17 @@ def main():
     # 7. Importância de Atributos (Química do Vinho)
     # Nomes das colunas na ordem do dataset
     colunas = [
-        "fixed acidity",
-        "volatile acidity",
-        "citric acid",
-        "residual sugar",
-        "chlorides",
-        "free sulfur dioxide",
-        "total sulfur dioxide",
-        "density",
+        "acidez fixa",
+        "acidez volátil",
+        "ácido cítrico",
+        "açúcar residual",
+        "cloretos",
+        "dióxido de enxofre livre",
+        "dióxido de enxofre total",
+        "densidade",
         "pH",
-        "sulphates",
-        "alcohol",
+        "sulfatos",
+        "álcool",
     ]
 
     print("\n--- Gerando Importância de Atributos ---")

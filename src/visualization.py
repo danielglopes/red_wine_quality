@@ -118,4 +118,3 @@ def plot_feature_importance(model, feature_names):
     plt.xlabel("Peso (Influência na Qualidade)")
     plt.axvline(0, color="black", linewidth=0.8)
     plt.tight_layout()
-    plt.show()
